@@ -21,15 +21,18 @@ import svgwrite
 # x2 = x + r * cos(theta)
 # y2 = y + r * sin(theta)
 
+# Values to use for non-random tree
 DELTA_LENGTH = 0.61
 DELTA_ANGLE = 45
 
-MIN_ANGLE = 20
+# Random ranges to use
+MIN_ANGLE = -60
 MAX_ANGLE = 60
 MIN_LENGTH = 0.5
 MAX_LENGTH = 0.8
+BRANCHES = [2, 2, 2, 3, 3, 3, 4, 5]
 
-def build_tree(start=(0, 0), branch_len=100, angle=270, use_random=True):
+def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
     """
     A recursive function to build a fractal tree.
 
@@ -44,25 +47,26 @@ def build_tree(start=(0, 0), branch_len=100, angle=270, use_random=True):
         return []
     else:
         tree = []
-
         x_end = start[0] + (branch_len * math.cos(math.radians(angle)))
         y_end = start[1] + (branch_len * math.sin(math.radians(angle)))
         tree.append((start[0], start[1], x_end, y_end))
 
         if use_random:
-            r_angle = angle - random.randrange(MIN_ANGLE, MAX_ANGLE)
-            l_angle = angle + random.randrange(MIN_ANGLE, MAX_ANGLE)
-            r_len = branch_len * random.uniform(MIN_LENGTH, MAX_LENGTH)
-            l_len = branch_len * random.uniform(MIN_LENGTH, MAX_LENGTH)
+            for _ in range(random.choice(BRANCHES)):
+                tree += build_tree(
+                    (x_end, y_end),
+                    branch_len * random.uniform(MIN_LENGTH, MAX_LENGTH),
+                    angle + random.randrange(MIN_ANGLE, MAX_ANGLE),
+                    use_random=use_random
+                )
         else:
             r_angle = angle - DELTA_ANGLE
             l_angle = angle + DELTA_ANGLE
             r_len = branch_len * DELTA_LENGTH
             l_len = branch_len * DELTA_LENGTH
-
-        # build the branches
-        tree += build_tree((x_end, y_end), r_len, r_angle, use_random=use_random)
-        tree += build_tree((x_end, y_end), l_len, l_angle, use_random=use_random)
+            # build the branches
+            tree += build_tree((x_end, y_end), r_len, r_angle, use_random=use_random)
+            tree += build_tree((x_end, y_end), l_len, l_angle, use_random=use_random)
 
         return tree
 
@@ -128,7 +132,8 @@ def generate_svg(tree):
             start=branch[:2],
             end=branch[2:],
             stroke=color,
-            stroke_width=width
+            stroke_width=width,
+            stroke_linecap="round"
             ))
     # The linejoin parameter only works for shapes and polylines...
     #svgwrite.mixins.Presentation.stroke(dwg, linejoin="round")
