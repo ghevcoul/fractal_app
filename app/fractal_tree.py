@@ -6,17 +6,6 @@ import random
 
 import svgwrite
 
-# Values to use for non-random tree
-DELTA_LENGTH = 0.61
-DELTA_ANGLE = 45
-
-# Random ranges to use
-MIN_ANGLE = -65
-MAX_ANGLE = 65
-MIN_LENGTH = 0.45
-MAX_LENGTH = 0.825
-BRANCHES = [2, 2, 2, 3, 3, 3, 4, 5]
-
 def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
     """
     A recursive function to build a fractal tree.
@@ -28,6 +17,12 @@ def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
     Output:
     tree - list of (x1, y1, x2, y2) defining the line segments of this tree
     """
+    params = {
+        "length": (0.45, 0.825),
+        "angle": (-65, 65),
+        "branches": [2, 2, 2, 3, 3, 3, 4, 5]
+    }
+
     if branch_len <= 3:
         return []
     else:
@@ -37,21 +32,29 @@ def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
         tree.append((start[0], start[1], x_end, y_end))
 
         if use_random:
-            for _ in range(random.choice(BRANCHES)):
+            for _ in range(random.choice(params["branches"])):
                 tree += build_tree(
                     (x_end, y_end),
-                    branch_len * random.uniform(MIN_LENGTH, MAX_LENGTH),
-                    angle + random.randrange(MIN_ANGLE, MAX_ANGLE),
+                    branch_len * random.uniform(
+                        params["length"][0],
+                        params["length"][1]
+                    ),
+                    angle + random.randrange(params["angle"][0], params["angle"][1]),
                     use_random=use_random
                 )
         else:
-            r_angle = angle - DELTA_ANGLE
-            l_angle = angle + DELTA_ANGLE
-            r_len = branch_len * DELTA_LENGTH
-            l_len = branch_len * DELTA_LENGTH
-            # build the branches
-            tree += build_tree((x_end, y_end), r_len, r_angle, use_random=use_random)
-            tree += build_tree((x_end, y_end), l_len, l_angle, use_random=use_random)
+            tree += build_tree(
+                (x_end, y_end),
+                branch_len * 0.61,
+                angle - 45,
+                use_random=use_random
+            )
+            tree += build_tree(
+                (x_end, y_end),
+                branch_len * 0.61,
+                angle + 45,
+                use_random=use_random
+            )
 
         return tree
 
