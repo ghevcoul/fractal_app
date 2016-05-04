@@ -26,10 +26,10 @@ DELTA_LENGTH = 0.61
 DELTA_ANGLE = 45
 
 # Random ranges to use
-MIN_ANGLE = -60
-MAX_ANGLE = 60
-MIN_LENGTH = 0.5
-MAX_LENGTH = 0.8
+MIN_ANGLE = -65
+MAX_ANGLE = 65
+MIN_LENGTH = 0.45
+MAX_LENGTH = 0.825
 BRANCHES = [2, 2, 2, 3, 3, 3, 4, 5]
 
 def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):

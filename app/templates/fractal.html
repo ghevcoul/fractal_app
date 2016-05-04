@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>Fractal Tree Generator</title>
+  </head>
   <body>
-    {{ image }}
+    <h1>Fractal Tree Generator v0.1</h1>
+    <div style="text-align:center;">
+      <h2>Your Unique Tree</h2>
+      {{ image }}
+    </div>
+    <h3>What is this?</h3>
+    <p>A simple program to randomly generate <a href="https://en.wikipedia.org/wiki/L-system">Lindenmayer fractal trees</a>. Every time you visit this page, a new tree is generated at random. This started as an experiment playing with recursive functions, Python's Turtle module, and randomness and has morphed into what you see here.</p>
+
+    <p>By its very nature, the work you see above is ephemeral. No one has seen this unique tree before and you will never be able to see it again after leaving this page. I like the idea of transient art that is both a shared and individual experience.</p>
+
+    <p>Don't like the tree you got? <a href="{{ url_for('display_tree') }}">Try another!</a></p>
+
+    <p><a href="https://github.com/ghevcoul/fractal_app">See the source on Github!</a></p>
   </body>
 </html>
