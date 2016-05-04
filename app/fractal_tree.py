@@ -1,25 +1,10 @@
 """
 A recursive fractal tree builder.
 """
-# Modify the thickness of the branches so that as the branchLen gets smaller,
-#   the line gets thinner.
-# Modify the color of the branches so that as the branchLen gets very short
-#   it is colored like a leaf.
-# Modify the angle used in turning the turtle so that at each branch point
-#   the angle is selected at random in some range. For example choose the
-#   angle between 15 and 45 degrees. Play around to see what looks good.
-# Modify the branchLen recursively so that instead of always subtracting the
-#   same amount you subtract a random amount in some range.
-
-import sys
 import math
 import random
 
 import svgwrite
-
-# Given start = (x, y), length = r, angle = theta
-# x2 = x + r * cos(theta)
-# y2 = y + r * sin(theta)
 
 # Values to use for non-random tree
 DELTA_LENGTH = 0.61
@@ -43,7 +28,7 @@ def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
     Output:
     tree - list of (x1, y1, x2, y2) defining the line segments of this tree
     """
-    if branch_len <= 2:
+    if branch_len <= 3:
         return []
     else:
         tree = []

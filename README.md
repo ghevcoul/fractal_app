@@ -1,3 +1,7 @@
 # Fractals!
 
-Web app for randomly generating fractal trees
+A simple Flask app for randomly generating fractal trees. 
+
+### TO-DO:
+* Play with randomness parameters to make grasses
+* Speed up tree generation
