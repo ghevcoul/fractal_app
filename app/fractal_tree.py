@@ -29,7 +29,7 @@ MAX_ANGLE = 60
 MIN_LENGTH = 0.5
 MAX_LENGTH = 0.8
 
-def build_tree(start, branch_len, angle, use_random=True):
+def build_tree(start=(0, 0), branch_len=100, angle=270, use_random=True):
     """
     A recursive function to build a fractal tree.
 
@@ -97,12 +97,24 @@ def find_branch_length(branch):
     """
     return math.sqrt((branch[2] - branch[0])**2 + (branch[3] - branch[1])**2)
 
-def write_tree(tree, filename):
+def get_max_vals(tree):
     """
-    Takes a list of line segments defining a tree and writes them to an SVG file.
+    Finds the max x and y values in the given tree and returns them.
+    """
+    x_vals = [(i[0], i[2]) for i in tree]
+    x_vals = [item for sublist in x_vals for item in sublist]
+    y_vals = [(i[1], i[3]) for i in tree]
+    y_vals = [item for sublist in y_vals for item in sublist]
+
+    return max(x_vals), max(y_vals)
+
+def generate_svg(tree):
+    """
+    Takes a list of line segments defining a tree and builds the SVG for them.
     """
     tree = tree_normalize(tree)
-    dwg = svgwrite.Drawing(filename=filename)
+
+    dwg = svgwrite.Drawing(size=get_max_vals(tree))
 
     # Add each branch to the drawing
     for branch in tree:
@@ -118,17 +130,32 @@ def write_tree(tree, filename):
             stroke=color,
             stroke_width=width
             ))
-
     # The linejoin parameter only works for shapes and polylines...
     #svgwrite.mixins.Presentation.stroke(dwg, linejoin="round")
 
+    return dwg
+
+def write_tree_file(tree, filename):
+    """
+    Takes a list of line segments defining a tree and writes them to an SVG file.
+    """
+    svg = generate_svg(tree)
     # Save the drawing
-    dwg.save()
+    svg.saveas(filename)
+
+def get_tree_xml(tree):
+    """
+    Takes a list of line segments defining a tree and returns the XML
+    for the SVG file as a string.
+    """
+    svg = generate_svg(tree)
+    return svg.tostring()
+
 
 if __name__ == "__main__":
-    STARTLENGTH = input("Starting line length? ")
-    RANDOMIZED = input("Generate a random tree? (True/False) ")
-
+    RANDOMIZED = False
+    STARTLENGTH = 100
     TREE = build_tree((0, 0), STARTLENGTH, 270, use_random=RANDOMIZED)
-    write_tree(TREE, "test.svg")
+    # write_tree(TREE, "test.svg")
+    print(get_tree_xml(TREE))
 
