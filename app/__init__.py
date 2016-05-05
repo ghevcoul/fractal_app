@@ -20,7 +20,7 @@ def display_tree():
     """
     Make a random fractal tree and display it.
     """
-    tree = fractal_tree.build_tree(use_random=True)
+    tree = fractal_tree.build_tree()
     svg_string = fractal_tree.get_tree_xml(tree)
 
     return render_template("fractal.html", image=Markup(svg_string))

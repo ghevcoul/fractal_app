@@ -1,12 +1,86 @@
 """
 A recursive fractal tree builder.
 """
+import sys
 import math
 import random
+import time
+from multiprocessing import Queue, JoinableQueue, Process
 
 import svgwrite
 
-def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
+PARAMS = {
+    "length": (0.45, 0.85),
+    "angle": (-65, 65),
+    "branches": [2, 2, 2, 3, 3, 3, 4, 4, 5]
+}
+
+def make_branch(start, length, angle):
+    """
+    Gets the x,y coordinates for the end of a branch with the input starting coordinates
+    with branch length and angle.
+    Returns a tuple of (x1, y1, x2, y2)
+    """
+    x_end = start[0] + (length * math.cos(math.radians(angle)))
+    y_end = start[1] + (length * math.sin(math.radians(angle)))
+    return (start[0], start[1], x_end, y_end)
+
+def worker(work_q, res_q):
+
+    while not work_q.empty():
+        task = work_q.get()
+        start, length, angle = task
+        if length > 3:
+            # Generate this branch
+            branch = make_branch(start, length, angle)
+            res_q.put(branch)
+            # Put the next branches on the work queue
+            next_pt = branch[2:]
+            for _ in range(random.choice(PARAMS["branches"])):
+                work_q.put(
+                    (
+                        next_pt,
+                        length * random.uniform(PARAMS["length"][0], PARAMS["length"][1]),
+                        angle + random.randrange(PARAMS["angle"][0], PARAMS["angle"][1])
+                    )
+                )
+        work_q.task_done()
+
+def build_tree_parallel(start=(0, 0), branch_len=150, angle=270):
+
+    # Make a work queue and result queue
+    work_queue = JoinableQueue()
+    result_queue = Queue()
+
+    # Put the first task in the work queue
+    work_queue.put([start, branch_len, angle])
+
+    # print(work_queue.get())
+    # sys.exit()
+
+    # Start a bunch of workers
+    workers = 2
+    processes = []
+    for _ in range(workers):
+        p = Process(target=worker, args=(work_queue, result_queue))
+        p.start()
+        processes.append(p)
+        time.sleep(0.25)
+    work_queue.join()
+    # for p in processes:
+    #     p.join()
+    work_queue.close()
+
+    # Collect the results...
+    tree = []
+    while not result_queue.empty():
+        tree.append(result_queue.get())
+    result_queue.close()
+    print(len(tree))
+    return tree
+
+
+def build_tree(start=(0, 0), branch_len=150, angle=270):
     """
     A recursive function to build a fractal tree.
 
@@ -27,33 +101,17 @@ def build_tree(start=(0, 0), branch_len=150, angle=270, use_random=True):
         return []
     else:
         tree = []
-        x_end = start[0] + (branch_len * math.cos(math.radians(angle)))
-        y_end = start[1] + (branch_len * math.sin(math.radians(angle)))
-        tree.append((start[0], start[1], x_end, y_end))
+        branch = make_branch(start, branch_len, angle)
+        tree.append(branch)
 
-        if use_random:
-            for _ in range(random.choice(params["branches"])):
-                tree += build_tree(
-                    (x_end, y_end),
-                    branch_len * random.uniform(
-                        params["length"][0],
-                        params["length"][1]
-                    ),
-                    angle + random.randrange(params["angle"][0], params["angle"][1]),
-                    use_random=use_random
-                )
-        else:
+        for _ in range(random.choice(params["branches"])):
             tree += build_tree(
-                (x_end, y_end),
-                branch_len * 0.61,
-                angle - 45,
-                use_random=use_random
-            )
-            tree += build_tree(
-                (x_end, y_end),
-                branch_len * 0.61,
-                angle + 45,
-                use_random=use_random
+                (branch[2], branch[3]),
+                branch_len * random.uniform(
+                    params["length"][0],
+                    params["length"][1]
+                ),
+                angle + random.randrange(params["angle"][0], params["angle"][1])
             )
 
         return tree
@@ -98,7 +156,7 @@ def get_max_vals(tree):
     y_vals = [(i[1], i[3]) for i in tree]
     y_vals = [item for sublist in y_vals for item in sublist]
 
-    return max(x_vals), max(y_vals)
+    return math.ceil(max(x_vals)), math.ceil(max(y_vals))
 
 def generate_svg(tree):
     """
@@ -146,9 +204,8 @@ def get_tree_xml(tree):
 
 
 if __name__ == "__main__":
-    RANDOMIZED = False
-    STARTLENGTH = 100
-    TREE = build_tree((0, 0), STARTLENGTH, 270, use_random=RANDOMIZED)
-    # write_tree(TREE, "test.svg")
-    print(get_tree_xml(TREE))
+    # random.seed(1234)
+    TREE = build_tree_parallel()
+    write_tree_file(TREE, "test_parallel.svg")
+    #print(get_tree_xml(TREE))
 
